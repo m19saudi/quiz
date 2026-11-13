@@ -1,0 +1,3441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link
+  rel="icon"
+  href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>"
+>
+  <title>UniPractice</title>
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS — SOFT INDIGO & CRISP WHITE DASHBOARD PALETTE
+       ========================================================================== */
+    :root {
+      --bg-page: #f4f6fb;
+      --bg-card: #ffffff;
+      --bg-subtle: #f8fafd;
+      --bg-hover: #f1f5fb;
+      --bg-pill: #eef2ff;
+      --border-light: #e2e8f0;
+      --border-medium: #cbd5e1;
+      --ink-primary: #1e293b;
+      --ink-secondary: #475569;
+      --ink-muted: #64748b;
+
+      --indigo-primary: #4f46e5;
+      --indigo-hover: #4338ca;
+      --indigo-soft: #eef2ff;
+      --indigo-ring: rgba(79, 70, 229, 0.16);
+
+      --emerald-primary: #10b981;
+      --emerald-bg: #ecfdf5;
+      --emerald-border: #6ee7b7;
+      --emerald-text: #047857;
+
+      --rose-primary: #f43f5e;
+      --rose-bg: #fff1f2;
+      --rose-border: #fda4af;
+      --rose-text: #be123c;
+
+      --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+      --shadow-elevated: 0 12px 30px -4px rgba(15, 23, 42, 0.09);
+      --shadow-modal: 0 24px 48px -12px rgba(15, 23, 42, 0.18);
+
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --radius-xl: 22px;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--ink-primary);
+      line-height: 1.55;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    /* Print-Only Worksheet Styling */
+    #printWorksheet {
+      display: none;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+      .app-wrapper,
+      .modal-overlay,
+      .toast-container,
+      .sidebar-scrim {
+        display: none !important;
+      }
+      #printWorksheet {
+        display: block !important;
+        padding: 10px 20px;
+        font-family: var(--font-sans);
+      }
+      .pw-header {
+        border-bottom: 2px solid #cbd5e1;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+      }
+      .pw-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+      }
+      .pw-subtitle {
+        font-size: 0.85rem;
+        color: #64748b;
+      }
+      .pw-student-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #334155;
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .pw-q-block {
+        margin-bottom: 20px;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .pw-q-title {
+        font-weight: 700;
+        font-size: 0.98rem;
+        color: #0f172a;
+        margin-bottom: 8px;
+      }
+      .pw-opt {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #1e293b;
+        margin-left: 16px;
+        margin-bottom: 5px;
+        padding: 3px 8px;
+        border-radius: 6px;
+      }
+      .pw-opt.is-correct {
+        background-color: #ecfdf5 !important;
+        color: #047857 !important;
+        font-weight: 700;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    /* ==========================================================================
+       2. TOP APPLICATION BAR
+       ========================================================================== */
+    .app-wrapper {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 18px 24px 64px;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mobile-sidebar-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-primary);
+      box-shadow: var(--shadow-card);
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.28);
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================================
+       3. BUTTONS & FORM CONTROLS
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 16px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.16s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #5b52f0 0%, #4f46e5 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.24);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-white {
+      background-color: var(--bg-card);
+      color: var(--ink-primary);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+    }
+
+    .btn-white:hover {
+      background-color: var(--bg-subtle);
+      border-color: var(--border-medium);
+    }
+
+    .btn-soft {
+      background-color: var(--indigo-soft);
+      color: var(--indigo-primary);
+    }
+
+    .btn-soft:hover {
+      background-color: #e0e7ff;
+    }
+
+    .btn-ghost {
+      color: var(--ink-secondary);
+      padding: 7px 11px;
+      border-radius: 10px;
+    }
+
+    .btn-ghost:hover {
+      background-color: var(--bg-hover);
+      color: var(--ink-primary);
+    }
+
+    .btn-danger-ghost {
+      color: var(--rose-text);
+      padding: 7px 11px;
+      border-radius: 10px;
+    }
+
+    .btn-danger-ghost:hover {
+      background-color: var(--rose-bg);
+    }
+
+    .btn-sm {
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      border-radius: 10px;
+    }
+
+    .btn-xs {
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      border-radius: 8px;
+    }
+
+    /* ==========================================================================
+       4. TWO-COLUMN WORKSPACE SHELL (SIDEBAR CARD + MAIN STUDY SPACE CARD)
+       ========================================================================== */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 276px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* Left Library Sidebar Card */
+    .library-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      padding: 20px 16px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .library-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px 14px;
+    }
+
+    .library-label {
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--ink-muted);
+    }
+
+    .quick-folder-box {
+      display: none;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .quick-folder-box.open {
+      display: flex;
+    }
+
+    .quick-folder-box input {
+      flex: 1;
+      min-width: 0;
+      padding: 7px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border-medium);
+      background: var(--bg-subtle);
+      font-size: 0.84rem;
+    }
+
+    .quick-folder-box input:focus {
+      outline: none;
+      border-color: var(--indigo-primary);
+      background: #ffffff;
+    }
+
+    .sidebar-folders {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 52vh;
+      overflow-y: auto;
+    }
+
+    .nav-folder-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      transition: all 0.14s ease;
+      gap: 8px;
+    }
+
+    .nav-folder-item:hover {
+      background-color: var(--bg-hover);
+      color: var(--ink-primary);
+    }
+
+    .nav-folder-item.active {
+      background-color: var(--indigo-soft);
+      color: var(--indigo-primary);
+      font-weight: 600;
+    }
+
+    .nav-folder-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .folder-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .nav-folder-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-count {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      padding: 1px 7px;
+      border-radius: 999px;
+    }
+
+    .nav-folder-item.active .nav-count {
+      background-color: #ffffff;
+      color: var(--indigo-primary);
+    }
+
+    .library-footer {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .privacy-note {
+      font-size: 0.76rem;
+      color: var(--ink-muted);
+      line-height: 1.5;
+      padding: 0 6px 14px;
+    }
+
+    /* Main Study Space Card */
+    .study-space-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      padding: 26px 28px 32px;
+      min-height: 76vh;
+    }
+
+    /* ==========================================================================
+       5. HOME PAGE TOP SUBJECT SELECTOR PILLS & STATS
+       ========================================================================== */
+    .top-subjects-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-bottom: 18px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .top-subjects-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+      margin-right: 4px;
+    }
+
+    .subject-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      background-color: var(--bg-subtle);
+      color: var(--ink-secondary);
+      border: 1px solid var(--border-light);
+      transition: all 0.14s ease;
+    }
+
+    .subject-pill:hover {
+      background-color: var(--bg-hover);
+      border-color: var(--border-medium);
+      color: var(--ink-primary);
+    }
+
+    .subject-pill.active {
+      background-color: var(--indigo-primary);
+      border-color: var(--indigo-primary);
+      color: #ffffff;
+      box-shadow: 0 3px 10px rgba(79, 70, 229, 0.24);
+    }
+
+    .subject-pill .pill-count {
+      font-size: 0.74rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background-color: rgba(15, 23, 42, 0.06);
+      color: inherit;
+    }
+
+    .subject-pill.active .pill-count {
+      background-color: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+
+    .study-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--indigo-primary);
+      margin-bottom: 4px;
+    }
+
+    .study-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+      line-height: 1.25;
+    }
+
+    .study-subtitle {
+      font-size: 0.88rem;
+      color: var(--ink-muted);
+      margin-top: 4px;
+    }
+
+    .study-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      position: relative;
+      min-width: 220px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px;
+      height: 15px;
+      color: var(--ink-muted);
+      pointer-events: none;
+    }
+
+    .search-field {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      background-color: var(--bg-subtle);
+      font-size: 0.87rem;
+      transition: all 0.15s ease;
+    }
+
+    .search-field:focus {
+      outline: none;
+      background-color: #ffffff;
+      border-color: var(--indigo-primary);
+      box-shadow: 0 0 0 3px var(--indigo-ring);
+    }
+
+    /* 3-Column Stat Tiles */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .stat-tile {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+    }
+
+    .stat-num {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--ink-primary);
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+      margin-top: 4px;
+    }
+
+    /* ==========================================================================
+       6. COLORFUL STACKED-PAPER QUIZ CARDS GRID
+       ========================================================================== */
+    .section-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .section-heading {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-heading span {
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
+
+    .quiz-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+      gap: 18px;
+    }
+
+    .quiz-notebook-card {
+      border-radius: var(--radius-lg);
+      padding: 14px 16px 16px;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.14);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      overflow: hidden;
+    }
+
+    .quiz-notebook-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.2);
+    }
+
+    /* Card Color Themes */
+    .theme-indigo  { background: linear-gradient(145deg, #6366f1 0%, #4f46e5 100%); }
+    .theme-emerald { background: linear-gradient(145deg, #34d399 0%, #10b981 100%); }
+    .theme-teal    { background: linear-gradient(145deg, #22d3ee 0%, #0891b2 100%); }
+    .theme-violet  { background: linear-gradient(145deg, #a78bfa 0%, #7c3aed 100%); }
+    .theme-amber   { background: linear-gradient(145deg, #fbbf24 0%, #d97706 100%); }
+    .theme-rose    { background: linear-gradient(145deg, #fb7185 0%, #e11d48 100%); }
+
+    /* Stacked Lined Paper Visual Motif at Top of Card */
+    .notebook-sheets {
+      height: 58px;
+      margin-bottom: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .sheet-back {
+      position: absolute;
+      top: 0;
+      left: 6px;
+      right: 14px;
+      height: 46px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 8px;
+      transform: rotate(-1.5deg);
+    }
+
+    .sheet-front {
+      position: absolute;
+      top: 6px;
+      left: 12px;
+      right: 4px;
+      height: 48px;
+      background-color: #ffffff;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 9px,
+        #e2e8f0 9px,
+        #e2e8f0 10px
+      );
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
+      transform: rotate(1deg);
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 5px 8px;
+    }
+
+    .sheet-folder-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      background: rgba(248, 250, 252, 0.95);
+      border: 1px solid var(--border-light);
+      padding: 1px 7px;
+      border-radius: 6px;
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-delete-x {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 3;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.24);
+      color: #ffffff;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s ease, background 0.15s ease;
+    }
+
+    .quiz-notebook-card:hover .card-delete-x {
+      opacity: 1;
+    }
+
+    .card-delete-x:hover {
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .card-quiz-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 3px;
+      line-height: 1.35;
+      cursor: pointer;
+    }
+
+    .card-quiz-desc {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.86);
+      margin-bottom: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.94);
+      margin-bottom: 12px;
+    }
+
+    .card-btn-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .card-pill-start {
+      background-color: #ffffff;
+      color: var(--ink-primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+      transition: transform 0.12s ease;
+    }
+
+    .card-pill-start:hover {
+      transform: scale(1.03);
+    }
+
+    .card-pill-sub {
+      background-color: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+      font-size: 0.77rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 10px;
+      backdrop-filter: blur(4px);
+      transition: background-color 0.14s ease;
+    }
+
+    .card-pill-sub:hover {
+      background-color: rgba(255, 255, 255, 0.34);
+    }
+
+    .quickstart-bar {
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .quickstart-bar h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--ink-primary);
+      margin-bottom: 4px;
+    }
+
+    .quickstart-bar p {
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+    }
+
+    /* ==========================================================================
+       7. STACKED VERTICAL PRACTICE INTERFACE (NO EXPLANATIONS)
+       ========================================================================== */
+    .practice-sheet {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .practice-topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 18px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .practice-controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 11px;
+      border-radius: 9px;
+      background-color: #ffffff;
+      border: 1px solid var(--border-light);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-chip input {
+      accent-color: var(--indigo-primary);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    .timer-chip {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 11px;
+      border-radius: 9px;
+      background-color: #ffffff;
+      border: 1px solid var(--border-light);
+      color: var(--ink-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mcq-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mcq-item {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .mcq-item:first-child {
+      padding-top: 4px;
+    }
+
+    .mcq-item:last-child {
+      border-bottom: none;
+    }
+
+    .mcq-question-text {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: var(--ink-primary);
+      margin-bottom: 14px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .mcq-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .choice-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      margin: 0 -14px;
+      border-radius: 11px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.12s ease, border-color 0.12s ease;
+      user-select: none;
+    }
+
+    .choice-row:hover {
+      background-color: var(--bg-subtle);
+    }
+
+    .choice-radio {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border-medium);
+      background-color: #ffffff;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .choice-radio::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--indigo-primary);
+      transform: scale(0);
+      transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .choice-row.selected {
+      background-color: var(--indigo-soft);
+    }
+
+    .choice-row.selected .choice-radio {
+      border-color: var(--indigo-primary);
+      box-shadow: 0 0 0 3px var(--indigo-ring);
+    }
+
+    .choice-row.selected .choice-radio::after {
+      transform: scale(1);
+    }
+
+    .choice-text {
+      font-size: 0.99rem;
+      color: var(--ink-primary);
+      flex: 1;
+      line-height: 1.48;
+    }
+
+    /* Graded States */
+    .choice-row.correct {
+      background-color: var(--emerald-bg);
+      border-color: var(--emerald-border);
+    }
+
+    .choice-row.correct .choice-radio {
+      border-color: var(--emerald-primary);
+      box-shadow: none;
+    }
+
+    .choice-row.correct .choice-radio::after {
+      background-color: var(--emerald-primary);
+      transform: scale(1);
+    }
+
+    .choice-row.wrong {
+      background-color: var(--rose-bg);
+      border-color: var(--rose-border);
+    }
+
+    .choice-row.wrong .choice-radio {
+      border-color: var(--rose-primary);
+      box-shadow: none;
+    }
+
+    .choice-row.wrong .choice-radio::after {
+      background-color: var(--rose-primary);
+      transform: scale(1);
+    }
+
+    .status-badge {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .status-badge.correct {
+      background-color: #d1fae5;
+      color: var(--emerald-text);
+    }
+
+    .status-badge.wrong {
+      background-color: #ffe4e6;
+      color: var(--rose-text);
+    }
+
+    .score-summary-card {
+      background: linear-gradient(135deg, #eef2ff 0%, #f8fafd 100%);
+      border: 1px solid #c7d2fe;
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .sticky-submit-bar {
+      position: sticky;
+      bottom: 18px;
+      margin-top: 26px;
+      padding: 13px 18px;
+      background-color: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-elevated);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      z-index: 15;
+    }
+
+    .progress-track {
+      flex: 1;
+      max-width: 220px;
+      height: 7px;
+      border-radius: 999px;
+      background-color: var(--border-light);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--indigo-primary);
+      transition: width 0.2s ease;
+    }
+
+    /* ==========================================================================
+       8. STREAMLINED QUIZ STUDIO (IMPORT + VISUAL EDITOR, NO EXPLANATIONS)
+       ========================================================================== */
+    .studio-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .studio-meta-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr;
+      gap: 14px;
+      padding: 18px 20px;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .field-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--ink-secondary);
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-medium);
+      background-color: #ffffff;
+      font-size: 0.9rem;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--indigo-primary);
+      box-shadow: 0 0 0 3px var(--indigo-ring);
+    }
+
+    .color-swatches {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .swatch-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: transform 0.12s ease;
+    }
+
+    .swatch-btn.selected {
+      border-color: var(--ink-primary);
+      transform: scale(1.14);
+    }
+
+    .studio-tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 20px;
+    }
+
+    .studio-tab {
+      padding: 10px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .studio-tab.active {
+      color: var(--indigo-primary);
+      border-bottom-color: var(--indigo-primary);
+    }
+
+    .import-columns {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .drop-area {
+      border: 1.5px dashed var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      background-color: var(--bg-subtle);
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: all 0.15s ease;
+    }
+
+    .drop-area:hover, .drop-area.dragover {
+      border-color: var(--indigo-primary);
+      background-color: var(--indigo-soft);
+    }
+
+    .preview-box {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-subtle);
+      padding: 16px;
+      max-height: 440px;
+      overflow-y: auto;
+    }
+
+    .ve-question-card {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      background-color: #ffffff;
+    }
+
+    .ve-q-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .ve-option-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .ve-option-line input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--indigo-primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       9. MODALS (EXPORT WITH/WITHOUT ANSWERS, MANAGE FOLDERS, CONFIRM)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(15, 23, 42, 0.38);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 60;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background-color: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 540px;
+      box-shadow: var(--shadow-modal);
+      overflow: hidden;
+      animation: popIn 0.16s ease;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 1.02rem;
+    }
+
+    .modal-body {
+      padding: 20px 22px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 13px 22px;
+      border-top: 1px solid var(--border-light);
+      background-color: var(--bg-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .segmented-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 5px;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+
+    .seg-option {
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      text-align: center;
+      transition: all 0.14s ease;
+    }
+
+    .seg-option.active {
+      background-color: #ffffff;
+      color: var(--indigo-primary);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.07);
+    }
+
+    .export-preview-textarea {
+      width: 100%;
+      height: 220px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      background-color: var(--bg-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.81rem;
+      line-height: 1.5;
+      color: var(--ink-primary);
+      resize: none;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .toast-pill {
+      background-color: var(--ink-primary);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 11px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .toast-pill.error {
+      background-color: var(--rose-primary);
+    }
+
+    .sidebar-scrim {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.3);
+      z-index: 40;
+    }
+
+    /* ==========================================================================
+       10. RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+    @media (max-width: 920px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+      .mobile-sidebar-toggle {
+        display: inline-flex;
+      }
+      .library-card {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 285px;
+        border-radius: 0;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+      }
+      .library-card.open {
+        transform: translateX(0);
+      }
+      .sidebar-scrim.open {
+        display: block;
+      }
+      .studio-meta-grid,
+      .import-columns {
+        grid-template-columns: 1fr;
+      }
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+      .app-wrapper {
+        padding: 14px 14px 56px;
+      }
+      .study-space-card {
+        padding: 20px 18px 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebarScrim" class="sidebar-scrim" onclick="toggleMobileSidebar(false)"></div>
+
+  <div class="app-wrapper">
+    <!-- ======================================================================
+         TOP APPLICATION HEADER
+         ====================================================================== -->
+    <header class="app-header">
+      <div class="brand-group">
+        <button class="mobile-sidebar-toggle" onclick="toggleMobileSidebar(true)" aria-label="Open folders">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>UniPractice</h1>
+          <p>Your private, offline question bank</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-white" onclick="openStudio(null, 'import')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Import
+        </button>
+        <button class="btn btn-white" onclick="downloadFullBackup()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Backup
+        </button>
+        <button class="btn btn-primary" onclick="openStudio(null, 'visual')">
+          + New quiz
+        </button>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         TWO-CARD WORKSPACE (SIDEBAR LIBRARY + MAIN STUDY SPACE)
+         ====================================================================== -->
+    <div class="workspace-grid">
+      <!-- Left Library Card -->
+      <aside id="librarySidebar" class="library-card">
+        <div class="library-card-head">
+          <span class="library-label">Library</span>
+          <button class="btn btn-white btn-xs" onclick="toggleQuickFolder(true)">+ Folder</button>
+        </div>
+
+        <div id="quickFolderBox" class="quick-folder-box">
+          <input
+            type="text"
+            id="quickFolderInput"
+            placeholder="Subject name..."
+            onkeydown="if(event.key==='Enter') createQuickFolder(); if(event.key==='Escape') toggleQuickFolder(false);"
+          />
+          <button class="btn btn-primary btn-xs" onclick="createQuickFolder()">Add</button>
+        </div>
+
+        <nav id="sidebarFolderList" class="sidebar-folders" aria-label="Subject Folders"></nav>
+
+        <div class="library-footer">
+          <p class="privacy-note">
+            Everything is saved on this device in your browser. No account, upload, server, or publishing required.
+          </p>
+          <button class="btn btn-white btn-sm" style="width: 100%;" onclick="openManageFoldersModal()">
+            ✎ Manage folders
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Study Space Card -->
+      <main id="studySpaceMain" class="study-space-card"></main>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       EXPORT QUIZ MODAL (WITH ANSWERS OR WITHOUT ANSWERS)
+       ======================================================================== -->
+  <div id="exportModal" class="modal-overlay" onclick="if(event.target===this) closeModal('exportModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="exportModalTitle">Export Quiz Questions</span>
+        <button class="btn-ghost btn-xs" onclick="closeModal('exportModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-label" style="margin-bottom: 8px;">Choose Export Version</div>
+        <div class="segmented-switch">
+          <button
+            id="exportModeWithBtn"
+            class="seg-option active"
+            onclick="setExportMode(true)"
+          >
+            ✓ With Answers (Answer Key)
+          </button>
+          <button
+            id="exportModeWithoutBtn"
+            class="seg-option"
+            onclick="setExportMode(false)"
+          >
+            ○ Without Answers (Practice Sheet)
+          </button>
+        </div>
+
+        <div id="exportStyleRow" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 8px;">
+          <span class="field-label">Answer Marking Style:</span>
+          <select id="exportAnswerStyle" class="text-input" style="width: auto; padding: 5px 10px; font-size: 0.82rem;" onchange="refreshExportPreview()">
+            <option value="asterisk">Inline Star (*B) Option)</option>
+            <option value="key">Separate Answer Key at Bottom</option>
+          </select>
+        </div>
+
+        <div class="field-label" style="margin-bottom: 6px;">Preview</div>
+        <textarea id="exportPreviewText" class="export-preview-textarea" readonly dir="auto"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-white btn-sm" onclick="copyExportedText()">Copy Text</button>
+        <button class="btn btn-white btn-sm" onclick="downloadExportedFile('json')">Download .JSON</button>
+        <button class="btn btn-white btn-sm" onclick="downloadExportedFile('txt')">Download .TXT</button>
+        <button class="btn btn-primary btn-sm" onclick="exportQuizToPdf()">🖨️ Export PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MANAGE FOLDERS MODAL
+       ======================================================================== -->
+  <div id="manageFoldersModal" class="modal-overlay" onclick="if(event.target===this) closeModal('manageFoldersModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>Manage Subject Folders</span>
+        <button class="btn-ghost btn-xs" onclick="closeModal('manageFoldersModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <input
+            type="text"
+            id="modalNewFolderInput"
+            class="text-input"
+            placeholder="New subject folder name..."
+            onkeydown="if(event.key==='Enter') createFolderFromModal()"
+          />
+          <button class="btn btn-primary btn-sm" onclick="createFolderFromModal()">+ Add</button>
+        </div>
+        <div id="manageFoldersList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" onclick="closeModal('manageFoldersModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       CONFIRMATION MODAL
+       ======================================================================== -->
+  <div id="confirmModal" class="modal-overlay" onclick="if(event.target===this) closeModal('confirmModal')">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <span id="confirmModalTitle">Confirm Action</span>
+        <button class="btn-ghost btn-xs" onclick="closeModal('confirmModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmModalBody" style="font-size: 0.9rem; color: var(--ink-secondary);"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-white btn-sm" onclick="closeModal('confirmModal')">Cancel</button>
+        <button id="confirmModalOk" class="btn btn-primary btn-sm" style="background: var(--rose-primary);">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <div id="printWorksheet" dir="auto"></div>
+
+  <script>
+    /* ==========================================================================
+       1. CONSTANTS, SAMPLE DATA & STORAGE
+       ========================================================================== */
+    const STORAGE_KEY = 'unipractice_soft_indigo_v2';
+
+    const CARD_THEMES = [
+      { id: 'indigo',  label: 'Indigo',  hex: '#4f46e5' },
+      { id: 'emerald', label: 'Emerald', hex: '#10b981' },
+      { id: 'teal',    label: 'Teal',    hex: '#0891b2' },
+      { id: 'violet',  label: 'Violet',  hex: '#7c3aed' },
+      { id: 'amber',   label: 'Amber',   hex: '#d97706' },
+      { id: 'rose',    label: 'Rose',    hex: '#e11d48' }
+    ];
+
+    const DEFAULT_DATA = {
+      folders: [
+        { id: 'f_general', name: 'General', color: '#4f46e5' },
+        { id: 'f_cs',      name: 'Computer Science', color: '#10b981' }
+      ],
+      quizzes: [
+        {
+          id: 'qz_1',
+          folderId: 'f_general',
+          title: 'Core Analytical & Calculation Practice',
+          subtitle: 'Quick warm-up set',
+          theme: 'indigo',
+          lastScore: null,
+          questions: [
+            {
+              id: 'q_101',
+              text: 'If a project takes 5 developers 12 days to complete, how many days will it take 6 developers working at the same rate?',
+              options: ['8 days', '10 days', '14 days', '15 days'],
+              correctIndex: 1
+            },
+            {
+              id: 'q_102',
+              text: 'Which of the following is a prime number?',
+              options: ['51', '57', '59', '63'],
+              correctIndex: 2
+            },
+            {
+              id: 'q_103',
+              text: 'A shirt originally priced at $80 is discounted by 25%. What is the final price?',
+              options: ['$55', '$60', '$65', '$70'],
+              correctIndex: 1
+            }
+          ]
+        },
+        {
+          id: 'qz_2',
+          folderId: 'f_cs',
+          title: 'Data Structures & Algorithms',
+          subtitle: 'Trees, complexity & traversals',
+          theme: 'emerald',
+          lastScore: null,
+          questions: [
+            {
+              id: 'q_201',
+              text: 'What is the worst-case time complexity of searching for a key in a balanced Binary Search Tree (AVL Tree)?',
+              options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'],
+              correctIndex: 1
+            },
+            {
+              id: 'q_202',
+              text: 'Which data structure operates strictly on a First-In, First-Out (FIFO) principle?',
+              options: ['Stack', 'Queue', 'Binary Heap', 'Hash Table'],
+              correctIndex: 1
+            },
+            {
+              id: 'q_203',
+              text: 'How many comparisons at most are required to search a sorted array of 1,024 elements using Binary Search?',
+              options: ['10', '11', '32', '512'],
+              correctIndex: 1
+            },
+            {
+              id: 'q_204',
+              text: 'Which graph traversal algorithm explores neighbors level by level using a queue?',
+              options: ['Depth-First Search (DFS)', 'Breadth-First Search (BFS)', 'Kruskal’s Algorithm', 'Bellman-Ford'],
+              correctIndex: 1
+            }
+          ]
+        }
+      ]
+    };
+
+    const SAMPLE_IMPORT_TEMPLATE = `1. What is the time complexity of Binary Search?
+A) O(n)
+*B) O(log n)
+C) O(n^2)
+D) O(1)
+
+2. Which protocol translates domain names into IP addresses?
+A) DHCP
+B) ARP
+C) DNS [correct]
+D) ICMP
+
+Q3: Which data structure uses LIFO ordering?
+- Queue
+- Stack
+- Graph
+- Tree
+Answer: B`;
+
+    let state = {
+      db: { folders: [], quizzes: [] },
+      activeFolderId: 'all', // 'all' or folder.id
+      search: '',
+      view: 'home', // 'home' | 'practice' | 'studio'
+      exportState: {
+        quizId: null,
+        includeAnswers: true
+      },
+      practice: {
+        quizId: null,
+        items: [],
+        answers: {},
+        submitted: false,
+        instantCheck: false,
+        shuffle: false,
+        seconds: 0,
+        paused: false,
+        timer: null
+      },
+      studio: {
+        quizId: null,
+        tab: 'import',
+        title: '',
+        subtitle: '',
+        folderId: '',
+        theme: 'indigo',
+        rawText: '',
+        parsed: null,
+        questions: []
+      }
+    };
+
+    function initApp() {
+      loadDatabase();
+      renderSidebarFolders();
+      renderHome();
+    }
+
+    function loadDatabase() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.folders) && Array.isArray(parsed.quizzes)) {
+            state.db = parsed;
+            return;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      state.db = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      saveDatabase();
+    }
+
+    function saveDatabase() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.db));
+      } catch (e) {
+        showToast('Could not save to browser storage.', true);
+      }
+    }
+
+    function makeId(prefix = 'id') {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    }
+
+    function esc(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    /* ==========================================================================
+       2. SIDEBAR & SUBJECT FOLDERS NAVIGATION
+       ========================================================================== */
+    function renderSidebarFolders() {
+      const container = document.getElementById('sidebarFolderList');
+      const totalQuizzes = state.db.quizzes.length;
+
+      let html = `
+        <div class="nav-folder-item ${state.activeFolderId === 'all' && state.view === 'home' ? 'active' : ''}"
+             onclick="selectSubjectFolder('all')">
+          <div class="nav-folder-left">
+            <span style="font-size: 0.9rem; line-height: 1;">✦</span>
+            <span class="nav-folder-title">All quizzes</span>
+          </div>
+          <span class="nav-count">${totalQuizzes}</span>
+        </div>
+      `;
+
+      state.db.folders.forEach((folder, idx) => {
+        const count = state.db.quizzes.filter(q => q.folderId === folder.id).length;
+        const color = folder.color || CARD_THEMES[idx % CARD_THEMES.length].hex;
+        const isActive = state.activeFolderId === folder.id && state.view === 'home';
+
+        html += `
+          <div class="nav-folder-item ${isActive ? 'active' : ''}" onclick="selectSubjectFolder('${folder.id}')">
+            <div class="nav-folder-left">
+              <span class="folder-dot" style="background-color: ${esc(color)};"></span>
+              <span class="nav-folder-title" dir="auto" title="${esc(folder.name)}">${esc(folder.name)}</span>
+            </div>
+            <span class="nav-count">${count}</span>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function selectSubjectFolder(folderId) {
+      stopPracticeTimer();
+      state.activeFolderId = folderId;
+      state.view = 'home';
+      toggleMobileSidebar(false);
+      renderSidebarFolders();
+      renderHome();
+    }
+
+    function toggleQuickFolder(open) {
+      const box = document.getElementById('quickFolderBox');
+      const inp = document.getElementById('quickFolderInput');
+      box.classList.toggle('open', open);
+      if (open) {
+        inp.value = '';
+        inp.focus();
+      }
+    }
+
+    function createQuickFolder() {
+      const inp = document.getElementById('quickFolderInput');
+      const name = inp.value.trim();
+      if (!name) return;
+      const color = CARD_THEMES[state.db.folders.length % CARD_THEMES.length].hex;
+      const folder = { id: makeId('f'), name, color };
+      state.db.folders.push(folder);
+      saveDatabase();
+      toggleQuickFolder(false);
+      selectSubjectFolder(folder.id);
+      showToast(`Created subject "${name}"`);
+    }
+
+    function openManageFoldersModal() {
+      renderManageFoldersList();
+      openModal('manageFoldersModal');
+    }
+
+    function renderManageFoldersList() {
+      const list = document.getElementById('manageFoldersList');
+      if (state.db.folders.length === 0) {
+        list.innerHTML = `<p style="font-size: 0.85rem; color: var(--ink-muted);">No folders yet. Add one above.</p>`;
+        return;
+      }
+      list.innerHTML = state.db.folders
+        .map((f, idx) => {
+          const count = state.db.quizzes.filter(q => q.folderId === f.id).length;
+          return `
+            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border-light); border-radius: 10px; background: var(--bg-subtle);">
+              <span class="folder-dot" style="background: ${esc(f.color || '#4f46e5')};"></span>
+              <input
+                type="text"
+                class="text-input"
+                dir="auto"
+                style="padding: 5px 9px; font-size: 0.86rem;"
+                value="${esc(f.name)}"
+                onchange="renameFolderDirect('${f.id}', this.value)"
+              />
+              <span style="font-size: 0.76rem; color: var(--ink-muted); white-space: nowrap;">${count} quiz${count === 1 ? '' : 'zes'}</span>
+              <button class="btn-danger-ghost btn-xs" onclick="deleteFolderById('${f.id}')">Delete</button>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    function createFolderFromModal() {
+      const inp = document.getElementById('modalNewFolderInput');
+      const name = inp.value.trim();
+      if (!name) return;
+      const color = CARD_THEMES[state.db.folders.length % CARD_THEMES.length].hex;
+      state.db.folders.push({ id: makeId('f'), name, color });
+      inp.value = '';
+      saveDatabase();
+      renderManageFoldersList();
+      renderSidebarFolders();
+      if (state.view === 'home') renderHome();
+      showToast(`Added "${name}"`);
+    }
+
+    function renameFolderDirect(folderId, newName) {
+      const trimmed = newName.trim();
+      if (!trimmed) return;
+      const folder = state.db.folders.find(f => f.id === folderId);
+      if (folder) {
+        folder.name = trimmed;
+        saveDatabase();
+        renderSidebarFolders();
+        if (state.view === 'home') renderHome();
+        showToast('Folder updated');
+      }
+    }
+
+    function deleteFolderById(folderId) {
+      const folder = state.db.folders.find(f => f.id === folderId);
+      if (!folder) return;
+      const count = state.db.quizzes.filter(q => q.folderId === folderId).length;
+      openConfirm(
+        'Delete Subject Folder',
+        `Delete "${folder.name}"${count ? ` and its ${count} quiz(zes)` : ''}?`,
+        () => {
+          state.db.folders = state.db.folders.filter(f => f.id !== folderId);
+          state.db.quizzes = state.db.quizzes.filter(q => q.folderId !== folderId);
+          if (state.activeFolderId === folderId) state.activeFolderId = 'all';
+          saveDatabase();
+          renderManageFoldersList();
+          renderSidebarFolders();
+          if (state.view === 'home') renderHome();
+          showToast('Subject deleted');
+        }
+      );
+    }
+
+    /* ==========================================================================
+       3. HOME VIEW (TOP SUBJECT PILLS + STATS + COLORFUL NOTEBOOK CARDS)
+       ========================================================================== */
+    function renderHome() {
+      state.view = 'home';
+      const main = document.getElementById('studySpaceMain');
+
+      const activeFolder =
+        state.activeFolderId === 'all'
+          ? null
+          : state.db.folders.find(f => f.id === state.activeFolderId);
+
+      const headingTitle = activeFolder ? activeFolder.name : 'All Quizzes';
+
+      const term = state.search.toLowerCase();
+      const visibleQuizzes = state.db.quizzes.filter(q => {
+        if (state.activeFolderId !== 'all' && q.folderId !== state.activeFolderId) return false;
+        if (!term) return true;
+        return (
+          q.title.toLowerCase().includes(term) ||
+          (q.subtitle || '').toLowerCase().includes(term) ||
+          q.questions.some(qs =>
+            qs.text.toLowerCase().includes(term) ||
+            qs.options.some(o => o.toLowerCase().includes(term))
+          )
+        );
+      });
+
+      const totalFolders = state.db.folders.length;
+      const totalQuizzes = state.db.quizzes.length;
+      const totalQuestions = state.db.quizzes.reduce((sum, q) => sum + q.questions.length, 0);
+
+      // Top Subject Selector Pills for Effortless Access on Home Page
+      let pillsHtml = `
+        <div class="top-subjects-bar" role="tablist" aria-label="Subject Folders">
+          <span class="top-subjects-label">Subjects:</span>
+          <button
+            class="subject-pill ${state.activeFolderId === 'all' ? 'active' : ''}"
+            onclick="selectSubjectFolder('all')"
+          >
+            <span>All Quizzes</span>
+            <span class="pill-count">${totalQuizzes}</span>
+          </button>
+      `;
+
+      state.db.folders.forEach((f, idx) => {
+        const count = state.db.quizzes.filter(q => q.folderId === f.id).length;
+        const dotColor = f.color || CARD_THEMES[idx % CARD_THEMES.length].hex;
+        const isActive = state.activeFolderId === f.id;
+        pillsHtml += `
+          <button
+            class="subject-pill ${isActive ? 'active' : ''}"
+            onclick="selectSubjectFolder('${f.id}')"
+          >
+            <span class="folder-dot" style="background: ${isActive ? '#ffffff' : esc(dotColor)};"></span>
+            <span dir="auto">${esc(f.name)}</span>
+            <span class="pill-count">${count}</span>
+          </button>
+        `;
+      });
+
+      pillsHtml += `
+          <button class="btn btn-ghost btn-xs" style="color: var(--indigo-primary); font-weight: 700;" onclick="toggleQuickFolder(true)">
+            + Add Subject
+          </button>
+        </div>
+      `;
+
+      let html = `
+        ${pillsHtml}
+
+        <div class="study-header-row">
+          <div>
+            <div class="eyebrow-tag">Your Study Space</div>
+            <h2 class="study-title" dir="auto">${esc(headingTitle)}</h2>
+            <p class="study-subtitle">Pick a subject folder above, then choose a quiz to practise offline.</p>
+          </div>
+
+          <div class="study-toolbar-right">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                class="search-field"
+                placeholder="Search quizzes..."
+                value="${esc(state.search)}"
+                oninput="state.search = this.value; renderHome();"
+              />
+            </div>
+            <button class="btn btn-primary" onclick="openStudio(null, 'visual')">+ Create quiz</button>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-tile">
+            <div class="stat-num">${totalFolders}</div>
+            <div class="stat-label">Subject folders</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-num">${totalQuizzes}</div>
+            <div class="stat-label">Quizzes saved</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-num">${totalQuestions}</div>
+            <div class="stat-label">Questions in library</div>
+          </div>
+        </div>
+
+        <div class="section-bar">
+          <div class="section-heading">
+            ${activeFolder ? `Quizzes in ${esc(activeFolder.name)}` : 'All saved quizzes'}
+            <span>(${visibleQuizzes.length})</span>
+          </div>
+          <button class="btn btn-white btn-sm" onclick="openStudio(null, 'import')">Import questions</button>
+        </div>
+      `;
+
+      if (visibleQuizzes.length === 0) {
+        html += `
+          <div style="border: 1.5px dashed var(--border-medium); border-radius: var(--radius-lg); padding: 48px 20px; text-align: center; background: var(--bg-subtle);">
+            <div style="font-weight: 700; font-size: 1.02rem; margin-bottom: 6px;">No quizzes found here yet</div>
+            <p style="font-size: 0.86rem; color: var(--ink-muted); margin-bottom: 18px;">
+              Import questions from a text/file or create a new quiz inside this subject.
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" onclick="openStudio(null, 'import')">Import from Text / File</button>
+              <button class="btn btn-white btn-sm" onclick="openStudio(null, 'visual')">+ Create Quiz</button>
+            </div>
+          </div>
+        `;
+      } else {
+        html += `<div class="quiz-cards-grid">`;
+        visibleQuizzes.forEach((quiz, idx) => {
+          const folder = state.db.folders.find(f => f.id === quiz.folderId);
+          const folderName = folder ? folder.name : 'General';
+          const themeName = quiz.theme || CARD_THEMES[idx % CARD_THEMES.length].id;
+          const qCount = quiz.questions.length;
+          const subtitle = quiz.subtitle && quiz.subtitle.trim() ? quiz.subtitle : 'Offline MCQ set';
+
+          html += `
+            <article class="quiz-notebook-card theme-${esc(themeName)}">
+              <button class="card-delete-x" title="Delete quiz" onclick="deleteQuiz('${quiz.id}')">✕</button>
+
+              <div>
+                <div class="notebook-sheets" onclick="startPractice('${quiz.id}')">
+                  <div class="sheet-back"></div>
+                  <div class="sheet-front">
+                    <span class="sheet-folder-badge" dir="auto">${esc(folderName)}</span>
+                  </div>
+                </div>
+
+                <h3 class="card-quiz-title" dir="auto" onclick="startPractice('${quiz.id}')">${esc(quiz.title)}</h3>
+                <div class="card-quiz-desc" dir="auto">${esc(subtitle)}</div>
+              </div>
+
+              <div>
+                <div class="card-meta-line">
+                  <span>☰ ${qCount} question${qCount === 1 ? '' : 's'}</span>
+                  <span>${quiz.lastScore !== null && quiz.lastScore !== undefined ? `Last: ${quiz.lastScore}%` : '▶ Practise'}</span>
+                </div>
+
+                <div class="card-btn-row">
+                  <button class="card-pill-start" onclick="startPractice('${quiz.id}')">Start</button>
+                  <button class="card-pill-sub" onclick="openStudio('${quiz.id}', 'visual')">Edit</button>
+                  <button class="card-pill-sub" onclick="openExportModal('${quiz.id}')">Export</button>
+                  <button class="card-pill-sub" onclick="duplicateQuiz('${quiz.id}')">Duplicate</button>
+                </div>
+              </div>
+            </article>
+          `;
+        });
+        html += `</div>`;
+      }
+
+      html += `
+        <div class="quickstart-bar">
+          <h4>Quick start</h4>
+          <p>Create a subject folder → add a quiz → paste or import your questions → save → start practising. Your work is automatically saved in this browser.</p>
+        </div>
+      `;
+
+      main.innerHTML = html;
+
+      const sInput = main.querySelector('.search-field');
+      if (sInput && document.activeElement !== sInput && state.search) {
+        sInput.focus();
+        sInput.setSelectionRange(state.search.length, state.search.length);
+      }
+    }
+
+    function duplicateQuiz(quizId) {
+      const orig = state.db.quizzes.find(q => q.id === quizId);
+      if (!orig) return;
+      const copy = {
+        ...JSON.parse(JSON.stringify(orig)),
+        id: makeId('qz'),
+        title: `${orig.title} (Copy)`,
+        lastScore: null
+      };
+      copy.questions = copy.questions.map(q => ({ ...q, id: makeId('q') }));
+      state.db.quizzes.unshift(copy);
+      saveDatabase();
+      renderSidebarFolders();
+      renderHome();
+      showToast('Quiz duplicated');
+    }
+
+    function deleteQuiz(quizId) {
+      const quiz = state.db.quizzes.find(q => q.id === quizId);
+      if (!quiz) return;
+      openConfirm('Delete Quiz', `Delete "${quiz.title}" permanently?`, () => {
+        state.db.quizzes = state.db.quizzes.filter(q => q.id !== quizId);
+        saveDatabase();
+        renderSidebarFolders();
+        renderHome();
+        showToast('Quiz deleted');
+      });
+    }
+
+    /* ==========================================================================
+       4. EXPORT QUIZ MODAL (WITH ANSWERS OR WITHOUT ANSWERS)
+       ========================================================================== */
+    function openExportModal(quizId) {
+      const quiz = state.db.quizzes.find(q => q.id === quizId);
+      if (!quiz) return;
+      state.exportState.quizId = quizId;
+      state.exportState.includeAnswers = true;
+      document.getElementById('exportModalTitle').textContent = `Export: ${quiz.title}`;
+      setExportMode(true);
+      openModal('exportModal');
+    }
+
+    function setExportMode(includeAnswers) {
+      state.exportState.includeAnswers = includeAnswers;
+      document.getElementById('exportModeWithBtn').classList.toggle('active', includeAnswers);
+      document.getElementById('exportModeWithoutBtn').classList.toggle('active', !includeAnswers);
+      document.getElementById('exportStyleRow').style.display = includeAnswers ? 'flex' : 'none';
+      refreshExportPreview();
+    }
+
+    function buildExportText(quiz, includeAnswers, style) {
+      const lines = [];
+      lines.push(quiz.title);
+      lines.push('='.repeat(Math.min(60, Math.max(20, quiz.title.length))));
+      lines.push('');
+
+      const answerKey = [];
+
+      quiz.questions.forEach((q, idx) => {
+        lines.push(`${idx + 1}. ${q.text}`);
+        q.options.forEach((opt, optIdx) => {
+          const letter = String.fromCharCode(65 + optIdx);
+          const isCorrect = optIdx === q.correctIndex;
+          if (includeAnswers && style === 'asterisk' && isCorrect) {
+            lines.push(`*${letter}) ${opt}`);
+          } else {
+            lines.push(`${letter}) ${opt}`);
+          }
+        });
+        if (includeAnswers && style === 'key') {
+          const rightLetter = String.fromCharCode(65 + q.correctIndex);
+          const rightText = q.options[q.correctIndex] || '';
+          answerKey.push(`${idx + 1}. ${rightLetter}) ${rightText}`);
+        }
+        lines.push('');
+      });
+
+      if (includeAnswers && style === 'key') {
+        lines.push('--- ANSWER KEY ---');
+        answerKey.forEach(entry => lines.push(entry));
+      }
+
+      return lines.join('\n').trim() + '\n';
+    }
+
+    function refreshExportPreview() {
+      const quiz = state.db.quizzes.find(q => q.id === state.exportState.quizId);
+      if (!quiz) return;
+      const style = document.getElementById('exportAnswerStyle').value;
+      const output = buildExportText(quiz, state.exportState.includeAnswers, style);
+      document.getElementById('exportPreviewText').value = output;
+    }
+
+    function copyExportedText() {
+      const box = document.getElementById('exportPreviewText');
+      box.select();
+      document.execCommand('copy');
+      showToast(
+        state.exportState.includeAnswers
+          ? 'Copied questions WITH answers!'
+          : 'Copied blank questions WITHOUT answers!'
+      );
+    }
+
+    function downloadExportedFile(format) {
+      const quiz = state.db.quizzes.find(q => q.id === state.exportState.quizId);
+      if (!quiz) return;
+      const withAns = state.exportState.includeAnswers;
+      const safeTitle = quiz.title.replace(/[^a-z0-9\u0600-\u06FF_-]+/gi, '_').replace(/^_|_$/g, '') || 'quiz';
+      const suffix = withAns ? 'with_answers' : 'blank_practice';
+
+      let content = '';
+      let mime = 'text/plain;charset=utf-8';
+      let ext = 'txt';
+
+      if (format === 'json') {
+        const cleanQuiz = {
+          title: quiz.title,
+          subtitle: quiz.subtitle || '',
+          questions: quiz.questions.map(q => {
+            const item = { text: q.text, options: [...q.options] };
+            if (withAns) item.correctIndex = q.correctIndex;
+            return item;
+          })
+        };
+        content = JSON.stringify(cleanQuiz, null, 2);
+        mime = 'application/json';
+        ext = 'json';
+      } else {
+        content = document.getElementById('exportPreviewText').value;
+      }
+
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${safeTitle}_${suffix}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Downloaded ${safeTitle}_${suffix}.${ext}`);
+    }
+
+    function exportQuizToPdf() {
+      const quiz = state.db.quizzes.find(q => q.id === state.exportState.quizId);
+      if (!quiz) return;
+
+      const withAns = state.exportState.includeAnswers;
+      const folder = state.db.folders.find(f => f.id === quiz.folderId);
+      const subtitle = quiz.subtitle && quiz.subtitle.trim()
+        ? quiz.subtitle
+        : `${folder ? folder.name + ' · ' : ''}${quiz.questions.length} Questions`;
+
+      let html = `
+        <div class="pw-header">
+          <div class="pw-title" dir="auto">${esc(quiz.title)}</div>
+          <div class="pw-subtitle" dir="auto">${esc(subtitle)}</div>
+        </div>
+        <div class="pw-student-row">
+          <div><strong>Name:</strong> ___________________________________</div>
+          <div><strong>Date:</strong> ___________________</div>
+        </div>
+      `;
+
+      quiz.questions.forEach((q, qIdx) => {
+        html += `
+          <div class="pw-q-block">
+            <div class="pw-q-title" dir="auto">
+              <span style="color: #4f46e5; margin-right: 6px;">${qIdx + 1}.</span>${esc(q.text)}
+            </div>
+        `;
+
+        q.options.forEach((opt, optIdx) => {
+          const isCorrect = withAns && optIdx === q.correctIndex;
+          const marker = isCorrect ? '[ ✓ ]' : '[ &nbsp;&nbsp; ]';
+          const letter = String.fromCharCode(65 + optIdx);
+
+          html += `
+            <div class="pw-opt ${isCorrect ? 'is-correct' : ''}" dir="auto">
+              <span style="font-family: var(--font-mono);">${marker}</span>
+              <span style="font-weight: 700; color: #64748b;">${letter})</span>
+              <span>${esc(opt)}</span>
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+      });
+
+      const sheet = document.getElementById('printWorksheet');
+      sheet.innerHTML = html;
+
+      const originalTitle = document.title;
+      const suffix = withAns ? 'With_Answers' : 'Practice_Sheet';
+      document.title = `${quiz.title}_${suffix}`;
+
+      window.print();
+
+      document.title = originalTitle;
+    }
+
+    function downloadFullBackup() {
+      const payload = JSON.stringify(state.db, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `UniPractice_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Full offline backup downloaded');
+    }
+
+    /* ==========================================================================
+       5. STACKED VERTICAL PRACTICE ENGINE (CLEAN & NO EXPLANATIONS)
+       ========================================================================== */
+    function preparePracticeQuestions(questions, shuffle) {
+      const cloned = questions.map(q => {
+        const mapped = q.options.map((text, i) => ({
+          text,
+          isCorrect: i === q.correctIndex
+        }));
+        if (shuffle) {
+          for (let i = mapped.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [mapped[i], mapped[j]] = [mapped[j], mapped[i]];
+          }
+        }
+        return {
+          id: q.id,
+          text: q.text,
+          options: mapped.map(m => m.text),
+          correctIndex: mapped.findIndex(m => m.isCorrect)
+        };
+      });
+
+      if (shuffle) {
+        for (let i = cloned.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+        }
+      }
+      return cloned;
+    }
+
+    function startPractice(quizId, subsetIds = null) {
+      const quiz = state.db.quizzes.find(q => q.id === quizId);
+      if (!quiz) return;
+      if (!quiz.questions || quiz.questions.length === 0) {
+        showToast('Add at least 1 question before starting.', true);
+        openStudio(quizId, 'visual');
+        return;
+      }
+
+      stopPracticeTimer();
+      const source = subsetIds
+        ? quiz.questions.filter(q => subsetIds.includes(q.id))
+        : quiz.questions;
+
+      const shuffle = state.practice.shuffle || false;
+      state.view = 'practice';
+      state.practice = {
+        quizId: quiz.id,
+        items: preparePracticeQuestions(source, shuffle),
+        answers: {},
+        submitted: false,
+        instantCheck: state.practice.instantCheck || false,
+        shuffle,
+        seconds: 0,
+        paused: false,
+        timer: setInterval(() => {
+          if (!state.practice.paused && !state.practice.submitted) {
+            state.practice.seconds++;
+            const el = document.getElementById('practiceClock');
+            if (el) el.textContent = formatTime(state.practice.seconds);
+          }
+        }, 1000)
+      };
+
+      renderSidebarFolders();
+      renderPracticeView();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function stopPracticeTimer() {
+      if (state.practice.timer) {
+        clearInterval(state.practice.timer);
+        state.practice.timer = null;
+      }
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function selectAnswer(qId, optIdx) {
+      if (state.practice.submitted) return;
+      if (state.practice.instantCheck && state.practice.answers[qId] !== undefined) return;
+      state.practice.answers[qId] = optIdx;
+      renderPracticeView();
+    }
+
+    function submitPracticeQuiz() {
+      const p = state.practice;
+      const total = p.items.length;
+      const answered = Object.keys(p.answers).length;
+
+      const completeGrading = () => {
+        p.submitted = true;
+        stopPracticeTimer();
+        let correct = 0;
+        p.items.forEach(item => {
+          if (p.answers[item.id] === item.correctIndex) correct++;
+        });
+        const pct = Math.round((correct / total) * 100);
+        const quiz = state.db.quizzes.find(q => q.id === p.quizId);
+        if (quiz) {
+          quiz.lastScore = pct;
+          saveDatabase();
+        }
+        renderPracticeView();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      if (answered < total) {
+        openConfirm(
+          'Submit Incomplete Quiz?',
+          `You answered ${answered} out of ${total} questions. Grade your answers now?`,
+          completeGrading
+        );
+      } else {
+        completeGrading();
+      }
+    }
+
+    function retryMissedQuestions() {
+      const p = state.practice;
+      const missed = p.items
+        .filter(item => p.answers[item.id] !== item.correctIndex)
+        .map(item => item.id);
+      if (missed.length === 0) return;
+      startPractice(p.quizId, missed);
+    }
+
+    function renderPracticeView() {
+      const main = document.getElementById('studySpaceMain');
+      const p = state.practice;
+      const quiz = state.db.quizzes.find(q => q.id === p.quizId);
+      if (!quiz) return;
+
+      const folder = state.db.folders.find(f => f.id === quiz.folderId);
+      const total = p.items.length;
+      const answered = Object.keys(p.answers).length;
+      const progressPct = total ? Math.round((answered / total) * 100) : 0;
+
+      let html = `
+        <div class="practice-sheet">
+          <div class="practice-topbar">
+            <div>
+              <button class="btn btn-ghost btn-sm" style="margin-left: -10px; margin-bottom: 4px;" onclick="selectSubjectFolder('${state.activeFolderId}')">
+                ← Back to library
+              </button>
+              <h2 class="study-title" dir="auto">${esc(quiz.title)}</h2>
+              <div style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 2px;">
+                Subject: <strong>${esc(folder ? folder.name : 'General')}</strong> · ${total} question${total === 1 ? '' : 's'}
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-white btn-sm" onclick="openExportModal('${quiz.id}')">Export</button>
+              <button class="btn btn-white btn-sm" onclick="openStudio('${quiz.id}', 'visual')">Edit Quiz</button>
+            </div>
+          </div>
+      `;
+
+      if (p.submitted) {
+        let right = 0;
+        p.items.forEach(it => {
+          if (p.answers[it.id] === it.correctIndex) right++;
+        });
+        const pct = Math.round((right / total) * 100);
+        const wrong = total - right;
+
+        html += `
+          <div class="score-summary-card">
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--indigo-primary);">
+                Practice Results
+              </div>
+              <div style="font-size: 1.9rem; font-weight: 800; color: var(--ink-primary); line-height: 1.2;">
+                ${pct}% <span style="font-size: 1rem; font-weight: 600; color: var(--ink-secondary);">(${right} / ${total} correct)</span>
+              </div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 3px;">
+                Time taken: ${formatTime(p.seconds)}
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              ${wrong > 0 ? `<button class="btn btn-primary btn-sm" onclick="retryMissedQuestions()">Retry Wrong Only (${wrong})</button>` : ''}
+              <button class="btn btn-white btn-sm" onclick="startPractice('${quiz.id}')">Restart Quiz</button>
+            </div>
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="practice-controls-bar">
+          <div class="control-group">
+            <label class="toggle-chip" title="Reveal answer immediately upon selecting an option">
+              <input type="checkbox" ${p.instantCheck ? 'checked' : ''} onchange="state.practice.instantCheck = this.checked; renderPracticeView();" />
+              Instant Check
+            </label>
+            <label class="toggle-chip" title="Randomize question & option order">
+              <input type="checkbox" ${p.shuffle ? 'checked' : ''} onchange="state.practice.shuffle = this.checked; startPractice('${quiz.id}');" />
+              Shuffle
+            </label>
+          </div>
+
+          <div class="control-group">
+            <button class="timer-chip" onclick="state.practice.paused = !state.practice.paused; renderPracticeView();" title="Click to pause or resume timer">
+              <span>${p.paused ? '⏸' : '⏱'}</span>
+              <span id="practiceClock">${formatTime(p.seconds)}</span>
+            </button>
+            ${!p.submitted ? `<button class="btn btn-ghost btn-xs" onclick="startPractice('${quiz.id}')">Reset</button>` : ''}
+          </div>
+        </div>
+
+        <div class="mcq-list">
+      `;
+
+      p.items.forEach((item, idx) => {
+        const picked = p.answers[item.id];
+        const hasPicked = picked !== undefined;
+        const showGrade = p.submitted || (p.instantCheck && hasPicked);
+
+        html += `
+          <section class="mcq-item">
+            <div class="mcq-question-text" dir="auto">${idx + 1}. ${esc(item.text)}</div>
+            <div class="mcq-choices" role="radiogroup">
+        `;
+
+        item.options.forEach((optText, optIdx) => {
+          const isSelected = picked === optIdx;
+          let cls = 'choice-row';
+          let badge = '';
+
+          if (showGrade) {
+            if (optIdx === item.correctIndex) {
+              cls += ' correct';
+              badge = `<span class="status-badge correct">Correct</span>`;
+            } else if (isSelected && optIdx !== item.correctIndex) {
+              cls += ' wrong';
+              badge = `<span class="status-badge wrong">Incorrect</span>`;
+            }
+          } else if (isSelected) {
+            cls += ' selected';
+          }
+
+          html += `
+            <div
+              class="${cls}"
+              role="radio"
+              aria-checked="${isSelected}"
+              tabindex="0"
+              onclick="selectAnswer('${item.id}', ${optIdx})"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectAnswer('${item.id}', ${optIdx});}"
+            >
+              <span class="choice-radio"></span>
+              <span class="choice-text" dir="auto">${esc(optText)}</span>
+              ${badge}
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+          </section>
+        `;
+      });
+
+      html += `</div>`;
+
+      if (!p.submitted) {
+        html += `
+          <div class="sticky-submit-bar">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--ink-secondary);">
+                ${answered} / ${total} answered
+              </span>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: ${progressPct}%;"></div>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="submitPracticeQuiz()">Submit & Grade</button>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      main.innerHTML = html;
+    }
+
+    /* ==========================================================================
+       6. STREAMLINED QUIZ STUDIO (IMPORT + VISUAL EDITOR, NO EXPLANATIONS)
+       ========================================================================== */
+    function openStudio(quizId = null, tab = 'import') {
+      stopPracticeTimer();
+      state.view = 'studio';
+
+      if (state.db.folders.length === 0) {
+        state.db.folders.push({ id: makeId('f'), name: 'General', color: '#4f46e5' });
+        saveDatabase();
+      }
+
+      if (quizId) {
+        const existing = state.db.quizzes.find(q => q.id === quizId);
+        if (!existing) return;
+        state.studio = {
+          quizId: existing.id,
+          tab,
+          title: existing.title,
+          subtitle: existing.subtitle || '',
+          folderId: existing.folderId,
+          theme: existing.theme || 'indigo',
+          rawText: '',
+          parsed: null,
+          questions: JSON.parse(JSON.stringify(existing.questions))
+        };
+      } else {
+        const defaultFolder =
+          state.activeFolderId !== 'all' && state.db.folders.some(f => f.id === state.activeFolderId)
+            ? state.activeFolderId
+            : state.db.folders[0].id;
+        const randomTheme = CARD_THEMES[state.db.quizzes.length % CARD_THEMES.length].id;
+
+        state.studio = {
+          quizId: null,
+          tab,
+          title: '',
+          subtitle: '',
+          folderId: defaultFolder,
+          theme: randomTheme,
+          rawText: '',
+          parsed: null,
+          questions: [{ id: makeId('q'), text: '', options: ['', '', '', ''], correctIndex: 0 }]
+        };
+      }
+
+      renderSidebarFolders();
+      renderStudio();
+    }
+
+    function renderStudio() {
+      const main = document.getElementById('studySpaceMain');
+      const st = state.studio;
+
+      const folderOptions = state.db.folders
+        .map(f => `<option value="${f.id}" ${f.id === st.folderId ? 'selected' : ''}>${esc(f.name)}</option>`)
+        .join('');
+
+      const swatchesHtml = CARD_THEMES.map(
+        t => `
+          <button
+            type="button"
+            class="swatch-btn ${st.theme === t.id ? 'selected' : ''}"
+            style="background-color: ${t.hex};"
+            title="${t.label}"
+            onclick="state.studio.theme = '${t.id}'; renderStudio();"
+          ></button>
+        `
+      ).join('');
+
+      let html = `
+        <div class="studio-wrap">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div class="eyebrow-tag">${st.quizId ? 'Edit Question Set' : 'Create Question Set'}</div>
+              <h2 class="study-title">${st.quizId ? 'Edit Quiz' : 'New Quiz'}</h2>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-white btn-sm" onclick="selectSubjectFolder('${state.activeFolderId}')">Cancel</button>
+              <button class="btn btn-primary btn-sm" onclick="saveStudioQuiz()">Save Quiz</button>
+            </div>
+          </div>
+
+          <div class="studio-meta-grid">
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="field-label">Quiz Title</label>
+              <input
+                type="text"
+                id="studioTitleField"
+                class="text-input"
+                dir="auto"
+                placeholder="e.g., Lecture 4: Operating Systems"
+                value="${esc(st.title)}"
+                oninput="state.studio.title = this.value"
+              />
+            </div>
+
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="field-label">Subject Folder</label>
+              <select class="text-input" onchange="state.studio.folderId = this.value">
+                ${folderOptions}
+              </select>
+            </div>
+
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="field-label">Card Color</label>
+              <div class="color-swatches">${swatchesHtml}</div>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Short Subtitle (Optional)</label>
+            <input
+              type="text"
+              class="text-input"
+              dir="auto"
+              placeholder="e.g., Midterm revision set"
+              value="${esc(st.subtitle)}"
+              oninput="state.studio.subtitle = this.value"
+            />
+          </div>
+
+          <div class="studio-tabs">
+            <button class="studio-tab ${st.tab === 'import' ? 'active' : ''}" onclick="state.studio.tab = 'import'; renderStudio();">
+              1. Smart Paste / File Import
+            </button>
+            <button class="studio-tab ${st.tab === 'visual' ? 'active' : ''}" onclick="state.studio.tab = 'visual'; renderStudio();">
+              2. Visual Editor (${st.questions.length} question${st.questions.length === 1 ? '' : 's'})
+            </button>
+          </div>
+      `;
+
+      if (st.tab === 'import') {
+        html += `
+          <div class="import-columns">
+            <div>
+              <div class="drop-area" id="importDropArea" onclick="document.getElementById('importFileInput').click()">
+                <input
+                  type="file"
+                  id="importFileInput"
+                  accept=".txt,.md,.csv,.json,.js"
+                  style="display: none;"
+                  onchange="handleImportFileSelect(event)"
+                />
+                <div style="font-weight: 700; color: var(--indigo-primary); font-size: 0.9rem; margin-bottom: 3px;">
+                  Upload .txt, .md, .csv, .json, or .js file
+                </div>
+                <div style="font-size: 0.78rem; color: var(--ink-muted);">
+                  Click to choose a file or drag & drop here
+                </div>
+              </div>
+
+              <div class="form-field">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <label class="field-label">Paste Questions Text</label>
+                  <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn-soft btn-xs" onclick="copySampleFormat()">Copy Format Example</button>
+                    <button type="button" class="btn-ghost btn-xs" onclick="fillSampleFormat()">Load Example</button>
+                  </div>
+                </div>
+                <textarea
+                  id="studioRawTextarea"
+                  class="text-input"
+                  dir="auto"
+                  style="min-height: 250px; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5;"
+                  placeholder="1. Question text here?&#10;A) First option&#10;*B) Correct option&#10;C) Third option&#10;D) Fourth option"
+                  oninput="state.studio.rawText = this.value; updateImportLivePreview();"
+                >${esc(st.rawText)}</textarea>
+              </div>
+            </div>
+
+            <div class="preview-box">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border-light);">
+                <strong style="font-size: 0.85rem;">Live Parsed Preview</strong>
+                <span id="importDetectedBadge" style="font-size: 0.75rem; font-weight: 700; color: var(--indigo-primary); background: var(--indigo-soft); padding: 2px 8px; border-radius: 999px;">0 detected</span>
+              </div>
+              <div id="importPreviewContent"></div>
+              <div id="importApplyContainer" style="margin-top: 14px; display: none;">
+                <button class="btn btn-primary btn-sm" style="width: 100%;" onclick="applyParsedQuestions()">
+                  Load Questions into Editor →
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        st.questions.forEach((q, qIdx) => {
+          html += `
+            <div class="ve-question-card">
+              <div class="ve-q-header">
+                <strong style="font-size: 0.9rem;">Question ${qIdx + 1}</strong>
+                <div style="display: flex; gap: 6px;">
+                  ${qIdx > 0 ? `<button class="btn btn-white btn-xs" onclick="moveStudioQuestion(${qIdx}, -1)">↑</button>` : ''}
+                  ${qIdx < st.questions.length - 1 ? `<button class="btn btn-white btn-xs" onclick="moveStudioQuestion(${qIdx}, 1)">↓</button>` : ''}
+                  <button class="btn btn-danger-ghost btn-xs" onclick="removeStudioQuestion(${qIdx})">Remove</button>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Question Text</label>
+                <textarea
+                  class="text-input"
+                  dir="auto"
+                  rows="2"
+                  placeholder="Enter question..."
+                  oninput="state.studio.questions[${qIdx}].text = this.value"
+                >${esc(q.text)}</textarea>
+              </div>
+
+              <div class="form-field" style="margin-bottom: 0;">
+                <label class="field-label">Choices (Select the circle next to the correct answer)</label>
+          `;
+
+          q.options.forEach((opt, optIdx) => {
+            html += `
+              <div class="ve-option-line">
+                <input
+                  type="radio"
+                  name="correct_opt_${qIdx}"
+                  ${q.correctIndex === optIdx ? 'checked' : ''}
+                  onchange="state.studio.questions[${qIdx}].correctIndex = ${optIdx}"
+                />
+                <input
+                  type="text"
+                  class="text-input"
+                  dir="auto"
+                  placeholder="Choice ${optIdx + 1}"
+                  value="${esc(opt)}"
+                  oninput="state.studio.questions[${qIdx}].options[${optIdx}] = this.value"
+                />
+                ${q.options.length > 2 ? `<button class="btn-danger-ghost btn-xs" onclick="removeStudioOption(${qIdx}, ${optIdx})">✕</button>` : ''}
+              </div>
+            `;
+          });
+
+          html += `
+                <div style="margin-top: 6px;">
+                  <button class="btn-soft btn-xs" onclick="addStudioOption(${qIdx})">+ Add Choice</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 18px;">
+            <button class="btn btn-white" onclick="addStudioQuestion()">+ Add Question</button>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-white" onclick="selectSubjectFolder('${state.activeFolderId}')">Cancel</button>
+              <button class="btn btn-primary" onclick="saveStudioQuiz()">Save Quiz</button>
+            </div>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      main.innerHTML = html;
+
+      if (st.tab === 'import') {
+        setupDropZone();
+        updateImportLivePreview();
+      }
+    }
+
+    /* ==========================================================================
+       7. SMART PARSER FOR TEXT, CSV, JSON & JS FILES
+       ========================================================================== */
+    function setupDropZone() {
+      const dz = document.getElementById('importDropArea');
+      if (!dz) return;
+      ['dragenter', 'dragover'].forEach(ev =>
+        dz.addEventListener(ev, e => {
+          e.preventDefault();
+          dz.classList.add('dragover');
+        })
+      );
+      ['dragleave', 'drop'].forEach(ev =>
+        dz.addEventListener(ev, e => {
+          e.preventDefault();
+          dz.classList.remove('dragover');
+        })
+      );
+      dz.addEventListener('drop', e => {
+        const file = e.dataTransfer?.files?.[0];
+        if (file) readUploadedFile(file);
+      });
+    }
+
+    function handleImportFileSelect(event) {
+      const file = event.target.files?.[0];
+      if (file) readUploadedFile(file);
+    }
+
+    function readUploadedFile(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const content = e.target.result;
+        const cleanName = file.name.replace(/\.[^/.]+$/, '');
+        if (!state.studio.title.trim()) {
+          state.studio.title = cleanName;
+          const tf = document.getElementById('studioTitleField');
+          if (tf) tf.value = cleanName;
+        }
+        state.studio.rawText = content;
+        const area = document.getElementById('studioRawTextarea');
+        if (area) area.value = content;
+        updateImportLivePreview();
+      };
+      reader.readAsText(file);
+    }
+
+    function copySampleFormat() {
+      const tmp = document.createElement('textarea');
+      tmp.value = SAMPLE_IMPORT_TEMPLATE;
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand('copy');
+      document.body.removeChild(tmp);
+      showToast('Format example copied!');
+    }
+
+    function fillSampleFormat() {
+      state.studio.rawText = SAMPLE_IMPORT_TEMPLATE;
+      if (!state.studio.title.trim()) {
+        state.studio.title = 'Imported Sample Set';
+        const tf = document.getElementById('studioTitleField');
+        if (tf) tf.value = state.studio.title;
+      }
+      const area = document.getElementById('studioRawTextarea');
+      if (area) area.value = SAMPLE_IMPORT_TEMPLATE;
+      updateImportLivePreview();
+    }
+
+    function updateImportLivePreview() {
+      const raw = (state.studio.rawText || '').trim();
+      const badge = document.getElementById('importDetectedBadge');
+      const box = document.getElementById('importPreviewContent');
+      const applyBtnWrap = document.getElementById('importApplyContainer');
+      if (!badge || !box) return;
+
+      if (!raw) {
+        state.studio.parsed = null;
+        badge.textContent = '0 detected';
+        box.innerHTML = `<p style="font-size: 0.83rem; color: var(--ink-muted);">Paste questions on the left or drop a file to preview parsed MCQs.</p>`;
+        if (applyBtnWrap) applyBtnWrap.style.display = 'none';
+        return;
+      }
+
+      // 1. JSON / JS Backup or Single Quiz
+      const jsonObj = tryParseJsonOrJs(raw);
+      if (jsonObj) {
+        state.studio.parsed = jsonObj;
+        if (jsonObj.type === 'backup') {
+          badge.textContent = `${jsonObj.data.quizzes.length} quizzes`;
+          box.innerHTML = `<p style="font-size: 0.85rem; color: var(--emerald-text); font-weight: 600;">Full backup detected (${jsonObj.data.folders.length} subjects, ${jsonObj.data.quizzes.length} quizzes).</p>`;
+          if (applyBtnWrap) {
+            applyBtnWrap.style.display = 'block';
+            applyBtnWrap.querySelector('button').textContent = 'Restore Full Backup';
+          }
+          return;
+        }
+        if (jsonObj.type === 'quiz') {
+          if (!state.studio.title.trim() && jsonObj.data.title) {
+            state.studio.title = jsonObj.data.title;
+            const tf = document.getElementById('studioTitleField');
+            if (tf) tf.value = state.studio.title;
+          }
+          const qs = jsonObj.data.questions;
+          badge.textContent = `${qs.length} detected`;
+          box.innerHTML = buildPreviewHtml(qs);
+          if (applyBtnWrap) {
+            applyBtnWrap.style.display = qs.length ? 'block' : 'none';
+            applyBtnWrap.querySelector('button').textContent = 'Load Questions into Editor →';
+          }
+          return;
+        }
+      }
+
+      // 2. CSV
+      const csvQs = tryParseCsv(raw);
+      if (csvQs && csvQs.length > 0) {
+        state.studio.parsed = { type: 'questions', questions: csvQs };
+        badge.textContent = `${csvQs.length} detected`;
+        box.innerHTML = buildPreviewHtml(csvQs);
+        if (applyBtnWrap) {
+          applyBtnWrap.style.display = 'block';
+          applyBtnWrap.querySelector('button').textContent = 'Load Questions into Editor →';
+        }
+        return;
+      }
+
+      // 3. Natural Text MCQ Format
+      const textQs = parseTextMcqs(raw);
+      state.studio.parsed = { type: 'questions', questions: textQs };
+      badge.textContent = `${textQs.length} detected`;
+
+      if (textQs.length === 0) {
+        box.innerHTML = `<p style="font-size: 0.82rem; color: var(--rose-text);">No valid MCQs detected yet. Make sure each question has at least 2 options (A, B, C...) and mark the correct one with *, [correct], or "Answer: B".</p>`;
+        if (applyBtnWrap) applyBtnWrap.style.display = 'none';
+      } else {
+        box.innerHTML = buildPreviewHtml(textQs);
+        if (applyBtnWrap) {
+          applyBtnWrap.style.display = 'block';
+          applyBtnWrap.querySelector('button').textContent = 'Load Questions into Editor →';
+        }
+      }
+    }
+
+    function buildPreviewHtml(questions) {
+      return questions
+        .map((q, idx) => {
+          const rightAns = q.options[q.correctIndex] || '';
+          return `
+            <div style="padding: 9px 0; border-bottom: 1px solid var(--border-light); font-size: 0.84rem;" dir="auto">
+              <div style="font-weight: 600; color: var(--ink-primary); margin-bottom: 2px;">${idx + 1}. ${esc(q.text)}</div>
+              <div style="font-size: 0.78rem; color: var(--emerald-text);">✓ ${esc(rightAns)} <span style="color: var(--ink-muted);">(${q.options.length} choices)</span></div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    function tryParseJsonOrJs(raw) {
+      try {
+        let s = raw.trim();
+        if (s.startsWith('window.QUIZ_DATA')) {
+          s = s.replace(/^window\.QUIZ_DATA\s*=\s*/, '').replace(/;\s*$/, '');
+        }
+        const obj = JSON.parse(s);
+        if (obj && Array.isArray(obj.folders) && Array.isArray(obj.quizzes)) {
+          return { type: 'backup', data: obj };
+        }
+        if (obj && Array.isArray(obj.questions)) {
+          return { type: 'quiz', data: obj };
+        }
+      } catch (e) {
+        return null;
+      }
+      return null;
+    }
+
+    function tryParseCsv(raw) {
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (!lines.length) return null;
+
+      const splitLine = line => {
+        const res = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') inQuotes = !inQuotes;
+          else if (ch === ',' && !inQuotes) {
+            res.push(cur.trim());
+            cur = '';
+          } else cur += ch;
+        }
+        res.push(cur.trim());
+        return res;
+      };
+
+      const rows = lines.map(splitLine);
+      if (rows[0].length < 4) return null;
+      let start = /question/i.test(rows[0][0]) ? 1 : 0;
+      const out = [];
+
+      for (let i = start; i < rows.length; i++) {
+        const cols = rows[i];
+        if (cols.length < 4) continue;
+        let ansCol = -1;
+        for (let c = cols.length - 1; c >= 3; c--) {
+          if (/^[A-Fa-f1-6]$/.test(cols[c])) {
+            ansCol = c;
+            break;
+          }
+        }
+        if (ansCol === -1) continue;
+        const opts = cols.slice(1, ansCol).filter(Boolean);
+        if (opts.length < 2) continue;
+
+        const tok = cols[ansCol].toUpperCase();
+        let idx = /^[A-F]$/.test(tok) ? tok.charCodeAt(0) - 65 : Math.max(0, parseInt(tok, 10) - 1);
+        if (idx >= opts.length) idx = 0;
+
+        out.push({ id: makeId('q'), text: cols[0], options: opts, correctIndex: idx });
+      }
+      return out.length ? out : null;
+    }
+
+    function parseTextMcqs(raw) {
+      const lines = raw.split(/\r?\n/);
+      const out = [];
+      let cur = null;
+
+      const optRegex = /^(\*)?\s*(?:([A-Ha-h])[\)\.\:\-]|[-•])\s*(.+)$/;
+      const ansRegex = /^(?:Answer|Ans|Correct(?:\s*Answer)?)\s*[:\-]\s*([A-Ha-h1-8])/i;
+      const skipRegex = /^(?:Explanation|Note|Reason)\s*[:\-]/i;
+      const qRegex = /^(?:Q\s*\d+[\)\.\:\-]|Question\s*\d+[\)\.\:\-]|\d+[\)\.\:\-])\s*(.+)$/i;
+
+      const pushCur = () => {
+        if (cur && cur.text && cur.options.length >= 2) {
+          if (cur.correctIndex < 0 || cur.correctIndex >= cur.options.length) cur.correctIndex = 0;
+          out.push(cur);
+        }
+        cur = null;
+      };
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) {
+          if (cur && cur.options.length >= 2) pushCur();
+          continue;
+        }
+        if (skipRegex.test(line)) continue;
+
+        const ansM = line.match(ansRegex);
+        if (ansM && cur) {
+          const tok = ansM[1].toUpperCase();
+          cur.correctIndex = /^[A-H]$/.test(tok) ? tok.charCodeAt(0) - 65 : parseInt(tok, 10) - 1;
+          continue;
+        }
+
+        const optM = line.match(optRegex);
+        if (optM && cur) {
+          let right = Boolean(optM[1]);
+          let text = optM[3].trim();
+          if (/^\*/.test(text)) {
+            right = true;
+            text = text.replace(/^\*+/, '').trim();
+          }
+          if (/\*$|\(correct\)|\[correct\]|✓/i.test(text)) {
+            right = true;
+            text = text.replace(/\*+$|\(correct\)|\[correct\]|✓/gi, '').trim();
+          }
+          if (right) cur.correctIndex = cur.options.length;
+          cur.options.push(text);
+          continue;
+        }
+
+        const qM = line.match(qRegex);
+        if (qM) {
+          pushCur();
+          cur = { id: makeId('q'), text: qM[1].trim(), options: [], correctIndex: 0 };
+          continue;
+        }
+
+        if (!cur || cur.options.length >= 2) {
+          pushCur();
+          cur = { id: makeId('q'), text: line, options: [], correctIndex: 0 };
+        } else {
+          cur.text += '\n' + line;
+        }
+      }
+
+      pushCur();
+      return out;
+    }
+
+    function applyParsedQuestions() {
+      const p = state.studio.parsed;
+      if (!p) return;
+
+      if (p.type === 'backup') {
+        const incoming = p.data;
+        const map = {};
+        incoming.folders.forEach(f => {
+          const found = state.db.folders.find(ef => ef.name.toLowerCase() === f.name.toLowerCase());
+          if (found) map[f.id] = found.id;
+          else {
+            const nid = makeId('f');
+            map[f.id] = nid;
+            state.db.folders.push({ id: nid, name: f.name, color: f.color || '#4f46e5' });
+          }
+        });
+        incoming.quizzes.forEach(q => {
+          state.db.quizzes.push({
+            ...q,
+            id: makeId('qz'),
+            folderId: map[q.folderId] || state.studio.folderId
+          });
+        });
+        saveDatabase();
+        renderSidebarFolders();
+        renderHome();
+        showToast(`Restored ${incoming.quizzes.length} quizzes`);
+        return;
+      }
+
+      const list = p.type === 'quiz' ? p.data.questions : p.questions;
+      if (!list || !list.length) return;
+
+      const clean = list.map(q => ({
+        id: makeId('q'),
+        text: String(q.text || '').trim(),
+        options: Array.isArray(q.options) ? q.options.map(o => String(o).trim()) : [],
+        correctIndex: typeof q.correctIndex === 'number' ? q.correctIndex : 0
+      }));
+
+      const isBlankStarter =
+        !state.studio.quizId &&
+        state.studio.questions.length === 1 &&
+        !state.studio.questions[0].text.trim();
+
+      state.studio.questions = isBlankStarter ? clean : state.studio.questions.concat(clean);
+      state.studio.tab = 'visual';
+      renderStudio();
+      showToast(`Loaded ${clean.length} question${clean.length === 1 ? '' : 's'}`);
+    }
+
+    /* Visual Editor Controls */
+    function addStudioQuestion() {
+      state.studio.questions.push({ id: makeId('q'), text: '', options: ['', '', '', ''], correctIndex: 0 });
+      renderStudio();
+    }
+
+    function removeStudioQuestion(idx) {
+      if (state.studio.questions.length <= 1) {
+        showToast('A quiz needs at least 1 question.', true);
+        return;
+      }
+      state.studio.questions.splice(idx, 1);
+      renderStudio();
+    }
+
+    function moveStudioQuestion(idx, dir) {
+      const arr = state.studio.questions;
+      const target = idx + dir;
+      if (target < 0 || target >= arr.length) return;
+      [arr[idx], arr[target]] = [arr[target], arr[idx]];
+      renderStudio();
+    }
+
+    function addStudioOption(qIdx) {
+      state.studio.questions[qIdx].options.push('');
+      renderStudio();
+    }
+
+    function removeStudioOption(qIdx, optIdx) {
+      const q = state.studio.questions[qIdx];
+      if (q.options.length <= 2) return;
+      q.options.splice(optIdx, 1);
+      if (q.correctIndex >= q.options.length) q.correctIndex = 0;
+      renderStudio();
+    }
+
+    function saveStudioQuiz() {
+      if (state.studio.tab === 'import' && state.studio.parsed) {
+        if (state.studio.parsed.type === 'backup') {
+          applyParsedQuestions();
+          return;
+        }
+        const isBlank =
+          !state.studio.quizId &&
+          state.studio.questions.length === 1 &&
+          !state.studio.questions[0].text.trim();
+        if (isBlank) {
+          const list =
+            state.studio.parsed.type === 'quiz'
+              ? state.studio.parsed.data.questions
+              : state.studio.parsed.questions;
+          if (list && list.length) {
+            state.studio.questions = list.map(q => ({
+              id: makeId('q'),
+              text: String(q.text || '').trim(),
+              options: q.options.map(o => String(o).trim()),
+              correctIndex: typeof q.correctIndex === 'number' ? q.correctIndex : 0
+            }));
+          }
+        }
+      }
+
+      const title = state.studio.title.trim();
+      if (!title) {
+        showToast('Please enter a quiz title.', true);
+        return;
+      }
+
+      const validQuestions = [];
+      for (let i = 0; i < state.studio.questions.length; i++) {
+        const q = state.studio.questions[i];
+        const prompt = q.text.trim();
+        const opts = q.options.map(o => o.trim()).filter(Boolean);
+        if (!prompt) {
+          showToast(`Question ${i + 1} is missing its text.`, true);
+          state.studio.tab = 'visual';
+          renderStudio();
+          return;
+        }
+        if (opts.length < 2) {
+          showToast(`Question ${i + 1} needs at least 2 choices.`, true);
+          state.studio.tab = 'visual';
+          renderStudio();
+          return;
+        }
+        validQuestions.push({
+          id: q.id || makeId('q'),
+          text: prompt,
+          options: opts,
+          correctIndex: q.correctIndex < opts.length ? q.correctIndex : 0
+        });
+      }
+
+      const folderId = state.studio.folderId || state.db.folders[0].id;
+      const subtitle = state.studio.subtitle.trim();
+      const theme = state.studio.theme || 'indigo';
+
+      if (state.studio.quizId) {
+        const idx = state.db.quizzes.findIndex(q => q.id === state.studio.quizId);
+        if (idx !== -1) {
+          state.db.quizzes[idx] = {
+            ...state.db.quizzes[idx],
+            title,
+            subtitle,
+            folderId,
+            theme,
+            questions: validQuestions
+          };
+        }
+        showToast('Quiz updated');
+      } else {
+        state.db.quizzes.unshift({
+          id: makeId('qz'),
+          folderId,
+          title,
+          subtitle,
+          theme,
+          lastScore: null,
+          questions: validQuestions
+        });
+        showToast('Quiz created');
+      }
+
+      saveDatabase();
+      state.activeFolderId = folderId;
+      state.view = 'home';
+      renderSidebarFolders();
+      renderHome();
+    }
+
+    /* ==========================================================================
+       8. MODALS, MOBILE DRAWER & TOASTS
+       ========================================================================== */
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function toggleMobileSidebar(open) {
+      document.getElementById('librarySidebar').classList.toggle('open', open);
+      document.getElementById('sidebarScrim').classList.toggle('open', open);
+    }
+
+    function openConfirm(title, message, onConfirm) {
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalBody').textContent = message;
+      document.getElementById('confirmModalOk').onclick = () => {
+        closeModal('confirmModal');
+        onConfirm();
+      };
+      openModal('confirmModal');
+    }
+
+    function showToast(msg, isError = false) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast-pill ${isError ? 'error' : ''}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => el.remove(), 220);
+      }, 2500);
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
